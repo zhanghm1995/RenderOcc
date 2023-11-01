@@ -29,6 +29,7 @@ class RenderOcc(BEVStereo4DOCC):
                  balance_cls_weight=True,
                  final_softplus=False,
                  use_mask=False,
+                 use_origin_testing=True,
                  **kwargs):
         super(RenderOcc, self).__init__(use_predicter=False, **kwargs)
         self.out_dim = out_dim
@@ -38,6 +39,7 @@ class RenderOcc(BEVStereo4DOCC):
         self.balance_cls_weight = balance_cls_weight
         self.final_softplus = final_softplus
         self.use_mask = use_mask  # whether using the visibility mask when computing losses
+        self.use_origin_testing = use_origin_testing
 
         if self.balance_cls_weight:
             self.class_weights = torch.from_numpy(1 / np.log(nusc_class_frequencies[:17] + 0.001)).float()
@@ -129,7 +131,12 @@ class RenderOcc(BEVStereo4DOCC):
         semantic = self.semantic_mlp(voxel_feats)
 
         # SDF --> Occupancy
-        no_empty_mask = density > self.test_threshold
+        if self.use_origin_testing:
+            no_empty_mask = density > self.test_threshold
+        else:
+            density_score = density_prob.softmax(-1)
+            no_empty_mask = density_score[..., 0] > density_score[..., 1]
+        
         semantic_res = semantic.argmax(-1)
 
         B, H, W, Z, C = voxel_feats.shape
