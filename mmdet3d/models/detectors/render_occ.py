@@ -97,7 +97,7 @@ class RenderOcc(BEVStereo4DOCC):
             density_target = density_target[mask_camera]
             loss_geo = self.loss_occ(density_prob, density_target)
 
-            semantic_mask = semantic_mask[mask_camera]
+            semantic_mask[~mask_camera] = False  # use the mask_camera to filter the semantic_mask
             loss_sem = self.semantic_loss(semantic[semantic_mask], 
                                           voxel_semantics[semantic_mask].long())
         else:
