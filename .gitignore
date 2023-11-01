@@ -1,1 +1,4 @@
 __pycache__/
+work_dirs/
+ckpts/
+build/

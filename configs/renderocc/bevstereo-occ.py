@@ -253,5 +253,5 @@ custom_hooks = [
     ),
 ]
 
-load_from="/ckpts/bevdet-stbase-4d-stereo-512x1408-cbgs.pth"
+load_from="ckpts/bevdet-stbase-4d-stereo-512x1408-cbgs.pth"
 # fp16 = dict(loss_scale='dynamic')

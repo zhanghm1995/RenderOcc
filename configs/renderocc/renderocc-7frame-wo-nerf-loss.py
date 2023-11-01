@@ -1,16 +1,18 @@
+'''
+Copyright (c) 2023 by Haiming Zhang. All Rights Reserved.
+
+Author: Haiming Zhang
+Date: 2023-10-31 23:41:46
+Email: haimingzhang@link.cuhk.edu.cn
+Description: 
+'''
 _base_ = ['./bevstereo-occ.py']
 
 model = dict(
     type='RenderOcc',
+    use_3d_loss=True,
     final_softplus=True,
-    nerf_head=dict(
-        type='NerfHead',
-        point_cloud_range= [-40,-40,-1, 40,40,5.4],
-        voxel_size=0.4,
-        scene_center=[0, 0, 2.2],
-        radius=39,
-        use_depth_sup=True,
-    )
+    nerf_head=None
 )
 
 optimizer = dict(type='AdamW', lr=1e-4, weight_decay=1e-2)

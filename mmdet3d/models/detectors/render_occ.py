@@ -74,7 +74,7 @@ class RenderOcc(BEVStereo4DOCC):
             nn.Linear(self.out_dim*2, num_classes-1),
         )
 
-        self.nerf_head = builder.build_head(nerf_head)
+        self.nerf_head = builder.build_head(nerf_head) if nerf_head is not None else None
       
 
     def loss_3d(self,voxel_semantics,mask_camera,density_prob, semantic):
