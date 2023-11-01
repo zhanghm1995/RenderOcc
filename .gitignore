@@ -2,3 +2,15 @@ __pycache__/
 work_dirs/
 ckpts/
 build/
+
+.vscode
+.idea
+
+# C extensions
+*.so
+
+eggs/
+.eggs/
+*.egg-info/
+
+mmdet3d/.mim
