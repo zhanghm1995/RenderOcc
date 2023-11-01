@@ -28,6 +28,7 @@ class RenderOcc(BEVStereo4DOCC):
                  use_3d_loss=False,
                  balance_cls_weight=True,
                  final_softplus=False,
+                 use_mask=False,
                  **kwargs):
         super(RenderOcc, self).__init__(use_predicter=False, **kwargs)
         self.out_dim = out_dim
@@ -36,6 +37,7 @@ class RenderOcc(BEVStereo4DOCC):
         self.use_lss_depth_loss = use_lss_depth_loss
         self.balance_cls_weight = balance_cls_weight
         self.final_softplus = final_softplus
+        self.use_mask = use_mask  # whether using the visibility mask when computing losses
 
         if self.balance_cls_weight:
             self.class_weights = torch.from_numpy(1 / np.log(nusc_class_frequencies[:17] + 0.001)).float()
@@ -87,9 +89,22 @@ class RenderOcc(BEVStereo4DOCC):
         semantic_mask = voxel_semantics!=17
 
         # compute loss
-        loss_geo=self.loss_occ(density_prob, density_target)
-        loss_sem = self.semantic_loss(semantic[semantic_mask], voxel_semantics[semantic_mask].long())
+        if self.use_mask:
+            mask_camera = mask_camera.to(torch.bool)
+            mask_camera = mask_camera.reshape(-1)
+            
+            density_prob = density_prob[mask_camera]
+            density_target = density_target[mask_camera]
+            loss_geo = self.loss_occ(density_prob, density_target)
 
+            semantic_mask = semantic_mask[mask_camera]
+            loss_sem = self.semantic_loss(semantic[semantic_mask], 
+                                          voxel_semantics[semantic_mask].long())
+        else:
+            loss_geo = self.loss_occ(density_prob, density_target)
+            loss_sem = self.semantic_loss(semantic[semantic_mask], 
+                                          voxel_semantics[semantic_mask].long())
+            
         loss_ = dict()
         loss_['loss_3d_geo'] = loss_geo
         loss_['loss_3d_sem'] = loss_sem

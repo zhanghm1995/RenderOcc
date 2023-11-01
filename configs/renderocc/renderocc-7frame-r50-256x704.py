@@ -2,17 +2,23 @@
 Copyright (c) 2023 by Haiming Zhang. All Rights Reserved.
 
 Author: Haiming Zhang
-Date: 2023-10-31 23:41:46
+Date: 2023-11-01 15:12:43
 Email: haimingzhang@link.cuhk.edu.cn
-Description: 
+Description: Use the ResNet50 Backbone.
 '''
-_base_ = ['./bevstereo-occ.py']
+_base_ = ['./bevstereo-occ-r50-256x704.py']
 
 model = dict(
     type='RenderOcc',
-    use_3d_loss=True,
     final_softplus=True,
-    nerf_head=None
+    nerf_head=dict(
+        type='NerfHead',
+        point_cloud_range= [-40,-40,-1, 40,40,5.4],
+        voxel_size=0.4,
+        scene_center=[0, 0, 2.2],
+        radius=39,
+        use_depth_sup=True,
+    )
 )
 
 optimizer = dict(type='AdamW', lr=1e-4, weight_decay=1e-2)
@@ -26,7 +32,7 @@ data = dict(
     samples_per_gpu=2,  # with 8 GPU, Batch Size=16 
     workers_per_gpu=6,
     train=dict(
-        use_rays=False,
+        use_rays=True,
         depth_gt_path=depth_gt_path,
         semantic_gt_path=semantic_gt_path,
         aux_frames=[-3,-2,-1,1,2,3],
