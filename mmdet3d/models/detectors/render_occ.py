@@ -29,7 +29,7 @@ class RenderOcc(BEVStereo4DOCC):
                  balance_cls_weight=True,
                  final_softplus=False,
                  use_mask=False,
-                 use_origin_testing=True,
+                 use_origin_testing=False,
                  **kwargs):
         super(RenderOcc, self).__init__(use_predicter=False, **kwargs)
         self.out_dim = out_dim
