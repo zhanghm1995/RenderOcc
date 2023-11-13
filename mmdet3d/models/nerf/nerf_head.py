@@ -110,6 +110,7 @@ class NerfHead(nn.Module):
             radius=39,
             step_size=0.5, 
             use_depth_sup=False,
+            use_semanitc_sup=True,
             balance_cls_weight=True,
             weight_depth=1.0,
             weight_semantic=1.0,
@@ -135,6 +136,7 @@ class NerfHead(nn.Module):
 
         self.step_size = step_size
         self.use_depth_sup = use_depth_sup
+        self.use_semanitc_sup = use_semanitc_sup
         
         z_ = xyz_range[2]/xyz_range[0]
         self.register_buffer('xyz_min', torch.Tensor([-1-self.bg_len, -1-self.bg_len, -z_]))
@@ -262,13 +264,14 @@ class NerfHead(nn.Module):
             depth_loss = self.depth_loss(results['render_depth']+1e-7, results['target_depth'])
             losses['loss_render_depth'] = depth_loss * self.weight_depth
         
-        target_semantic = results['target_semantic']
-        semantic = results['render_semantic']
-        criterion = nn.CrossEntropyLoss(
-            weight=self.class_weights.type_as(semantic), reduction="mean"
-        )
-        semantic_loss = criterion(semantic, target_semantic.long())
-        losses['loss_render_semantic'] = semantic_loss * self.weight_semantic
+        if self.use_semanitc_sup:
+            target_semantic = results['target_semantic']
+            semantic = results['render_semantic']
+            criterion = nn.CrossEntropyLoss(
+                weight=self.class_weights.type_as(semantic), reduction="mean"
+            )
+            semantic_loss = criterion(semantic, target_semantic.long())
+            losses['loss_render_semantic'] = semantic_loss * self.weight_semantic
     
 
         if self.weight_entropy_last > 0:
@@ -343,7 +346,8 @@ class NerfHead(nn.Module):
             # render depth & semantic
             if self.use_depth_sup:
                 results['render_depth'] = self.render_depth(results)
-            results['render_semantic'] = self.render_semantic(results)
+            if self.use_semanitc_sup:
+                results['render_semantic'] = self.render_semantic(results)
             # compute loss
             loss_single = self.compute_loss(results)
             for key in loss_single:
