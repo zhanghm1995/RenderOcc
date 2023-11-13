@@ -7,7 +7,7 @@ Email: haimingzhang@link.cuhk.edu.cn
 Description: Pretrain the RenderOcc with the rendered depth only.
 '''
 
-_base_ = ['../renderocc/bevstereo-occ-r50-256x704.py']
+_base_ = ['./bevstereo-occ-r50-256x704-wo-bevdet-init.py']
 
 model = dict(
     type='RenderOcc',
@@ -48,3 +48,5 @@ runner = dict(type='EpochBasedRunner', max_epochs=12)
 log_config = dict(
     interval=50,
 )
+
+find_unused_parameters=True
