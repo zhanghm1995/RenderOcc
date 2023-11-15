@@ -110,7 +110,7 @@ class NerfHead(nn.Module):
             radius=39,
             step_size=0.5, 
             use_depth_sup=False,
-            use_semanitc_sup=True,
+            use_semantic_sup=True,
             balance_cls_weight=True,
             weight_depth=1.0,
             weight_semantic=1.0,
@@ -136,7 +136,7 @@ class NerfHead(nn.Module):
 
         self.step_size = step_size
         self.use_depth_sup = use_depth_sup
-        self.use_semanitc_sup = use_semanitc_sup
+        self.use_semantic_sup = use_semantic_sup
         
         z_ = xyz_range[2]/xyz_range[0]
         self.register_buffer('xyz_min', torch.Tensor([-1-self.bg_len, -1-self.bg_len, -z_]))
@@ -264,7 +264,7 @@ class NerfHead(nn.Module):
             depth_loss = self.depth_loss(results['render_depth']+1e-7, results['target_depth'])
             losses['loss_render_depth'] = depth_loss * self.weight_depth
         
-        if self.use_semanitc_sup:
+        if self.use_semantic_sup:
             target_semantic = results['target_semantic']
             semantic = results['render_semantic']
             criterion = nn.CrossEntropyLoss(
@@ -346,7 +346,7 @@ class NerfHead(nn.Module):
             # render depth & semantic
             if self.use_depth_sup:
                 results['render_depth'] = self.render_depth(results)
-            if self.use_semanitc_sup:
+            if self.use_semantic_sup:
                 results['render_semantic'] = self.render_semantic(results)
             # compute loss
             loss_single = self.compute_loss(results)
